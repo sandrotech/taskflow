@@ -17,7 +17,8 @@ RUN npx vite build
 
 # Etapa 2: Servidor Nginx
 FROM nginx:stable-alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
+
 
 # Configuração opcional (para rotas SPA)
 # RUN sed -i 's/listen 80;/listen ${PORT:-80};/' /etc/nginx/conf.d/default.conf
