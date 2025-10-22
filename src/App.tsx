@@ -12,9 +12,13 @@ import {
   Task,
   FocusTimer,
   Client,
+  Product,
+  ClientProduct,
   initialTasks,
   initialFocusTimer,
   clients as initialClients,
+  products as initialProducts,
+  clientProducts as initialClientProducts,
   deliveries,
   financeHistory,
 } from "./lib/mockData";
@@ -24,6 +28,8 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [focusTimer, setFocusTimer] = useState<FocusTimer>(initialFocusTimer);
   const [clients, setClients] = useState<Client[]>(initialClients);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [clientProducts, setClientProducts] = useState<ClientProduct[]>(initialClientProducts);
 
   const handleTaskCreate = (newTask: Omit<Task, "id">) => {
     const task: Task = {
@@ -57,6 +63,31 @@ export default function App() {
     setClients([...clients, client]);
   };
 
+  const handleClientUpdate = (id: string, updates: Partial<Client>) => {
+    setClients(clients.map((client) => (client.id === id ? { ...client, ...updates } : client)));
+  };
+
+  const handleClientDelete = (id: string) => {
+    setClients(clients.filter((client) => client.id !== id));
+    // Also remove associated product links
+    setClientProducts(clientProducts.filter((cp) => cp.clientId !== id));
+  };
+
+  const handleProductCreate = (newProduct: Omit<Product, "id">) => {
+    const product: Product = {
+      ...newProduct,
+      id: `P-${Date.now().toString().slice(-3)}`,
+    };
+    setProducts([...products, product]);
+  };
+
+  const handleClientProductsUpdate = (clientId: string, productLinks: ClientProduct[]) => {
+    // Remove old links for this client
+    const otherLinks = clientProducts.filter((cp) => cp.clientId !== clientId);
+    // Add new links
+    setClientProducts([...otherLinks, ...productLinks]);
+  };
+
   return (
     <RouterProvider initialRoute="/dashboard">
       <div className="min-h-screen" style={{ backgroundColor: "#0F0F0F" }}>
@@ -80,7 +111,16 @@ export default function App() {
           </Route>
 
           <Route path="/cadastros">
-            <Cadastros clients={clients} onClientCreate={handleClientCreate} />
+            <Cadastros
+              clients={clients}
+              products={products}
+              clientProducts={clientProducts}
+              onClientCreate={handleClientCreate}
+              onClientUpdate={handleClientUpdate}
+              onClientDelete={handleClientDelete}
+              onProductCreate={handleProductCreate}
+              onClientProductsUpdate={handleClientProductsUpdate}
+            />
           </Route>
 
           <Route path="/entregas">
