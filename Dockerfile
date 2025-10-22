@@ -2,24 +2,25 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
-# Instala dependências e builda
+# Copia dependências e instala
 COPY package*.json ./
+
+# Instala TODAS as dependências (incluindo dev)
 RUN npm install
+
+# Copia o restante dos arquivos
 COPY . .
-RUN npm run build
 
-# Etapa 2: Servidor
+# ⚙️ Corrige permissões e executa build
+RUN chmod +x ./node_modules/.bin/vite
+RUN npx vite build
+
+# Etapa 2: Servidor Nginx
 FROM nginx:stable-alpine
-WORKDIR /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copia build do Vite
-COPY --from=build /app/dist .
+# Configuração opcional (para rotas SPA)
+# RUN sed -i 's/listen 80;/listen ${PORT:-80};/' /etc/nginx/conf.d/default.conf
 
-# Substitui a porta padrão do Nginx pela variável $PORT
-# Assim o CapRover injeta a porta automaticamente
-RUN sed -i 's/listen 80;/listen ${PORT:-80};/' /etc/nginx/conf.d/default.conf
-
-# Expõe a porta dinamicamente (CapRover ignora esse valor)
 EXPOSE ${PORT:-80}
-
-CMD ["sh", "-c", "nginx -g 'daemon off;'"]
+CMD ["nginx", "-g", "daemon off;"]
