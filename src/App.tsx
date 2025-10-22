@@ -76,7 +76,7 @@ export default function App() {
           </Route>
 
           <Route path="/tarefas">
-            <Tarefas tasks={tasks} />
+            <Tarefas tasks={tasks} onTaskUpdate={handleTaskUpdate} onTaskBindToTimer={handleTaskBindToTimer} />
           </Route>
 
           <Route path="/cadastros">
