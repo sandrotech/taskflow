@@ -2,15 +2,13 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Textarea } from "../ui/textarea";
 import { Badge } from "../ui/badge";
 import { Task } from "../../lib/mockData";
 import { formatDate, deltaDays } from "../../lib/utils/dateHelpers";
+import { TaskDetailModal } from "../modals/TaskDetailModal";
+import { NewTaskModal } from "../modals/NewTaskModal";
 import { toast } from "sonner@2.0.3";
 
 interface TaskCalendarProps {
@@ -38,16 +36,6 @@ export function TaskCalendar({ tasks, onTaskCreate, onTaskUpdate, onTaskBindToTi
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 9, 1)); // October 2025
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    title: "",
-    client: "",
-    type: "",
-    date: "",
-    priority: "",
-    notes: "",
-  });
 
   const monthName = formatDate(currentMonth, "LLLL yyyy");
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
@@ -110,27 +98,6 @@ export function TaskCalendar({ tasks, onTaskCreate, onTaskUpdate, onTaskBindToTi
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  const handleCreateTask = () => {
-    if (!formData.title || !formData.client || !formData.type || !formData.date || !formData.priority) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-
-    onTaskCreate({
-      title: formData.title,
-      client: formData.client,
-      type: formData.type as Task["type"],
-      date: formData.date,
-      status: "producing",
-      priority: formData.priority as Task["priority"],
-      notes: formData.notes || undefined,
-    });
-
-    setFormData({ title: "", client: "", type: "", date: "", priority: "", notes: "" });
-    setIsNewTaskOpen(false);
-    toast.success("✅ Tarefa criada e adicionada ao calendário");
-  };
-
   const handleMarkDone = (taskId: string) => {
     onTaskUpdate(taskId, { status: "done" });
     toast.success("✅ Tarefa concluída");
@@ -180,107 +147,13 @@ export function TaskCalendar({ tasks, onTaskCreate, onTaskUpdate, onTaskBindToTi
                 Organize suas tarefas e prazos em um só lugar.
               </p>
             </div>
-            <Dialog open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  className="bg-gradient-to-r from-[#FFD75A] to-[#FFB84D] hover:from-[#FFE17A] hover:to-[#FFC86D] text-[#0F0F0F] shadow-[0_0_20px_rgba(255,215,90,0.3)]"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nova Tarefa
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-[#1A1A1A] border-[#222222]">
-                <DialogHeader>
-                  <DialogTitle style={{ color: "#E0E0E0" }}>Nova Tarefa</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label style={{ color: "#E0E0E0" }}>Título *</Label>
-                    <Input
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Ex: Carrossel Lançamento - v2"
-                      className="bg-[#222222] border-[#333333] text-[#E0E0E0]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label style={{ color: "#E0E0E0" }}>Cliente *</Label>
-                    <Select value={formData.client} onValueChange={(value) => setFormData({ ...formData, client: value })}>
-                      <SelectTrigger className="bg-[#222222] border-[#333333] text-[#E0E0E0]">
-                        <SelectValue placeholder="Selecione o cliente" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#222222] border-[#333333]">
-                        <SelectItem value="TechStartup">TechStartup</SelectItem>
-                        <SelectItem value="Silva & Associados">Silva & Associados</SelectItem>
-                        <SelectItem value="Pedro Costa">Pedro Costa</SelectItem>
-                        <SelectItem value="AS Eventos">AS Eventos</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label style={{ color: "#E0E0E0" }}>Tipo *</Label>
-                    <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                      <SelectTrigger className="bg-[#222222] border-[#333333] text-[#E0E0E0]">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#222222] border-[#333333]">
-                        <SelectItem value="Feed">Feed</SelectItem>
-                        <SelectItem value="Carrossel">Carrossel</SelectItem>
-                        <SelectItem value="Stories">Stories</SelectItem>
-                        <SelectItem value="Adaptação">Adaptação</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label style={{ color: "#E0E0E0" }}>Data *</Label>
-                    <Input 
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      min="2025-10-22"
-                      className="bg-[#222222] border-[#333333] text-[#E0E0E0]"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label style={{ color: "#E0E0E0" }}>Prioridade *</Label>
-                    <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
-                      <SelectTrigger className="bg-[#222222] border-[#333333] text-[#E0E0E0]">
-                        <SelectValue placeholder="Selecione a prioridade" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#222222] border-[#333333]">
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="high">Alta</SelectItem>
-                        <SelectItem value="critical">Crítica</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label style={{ color: "#E0E0E0" }}>Notas (opcional)</Label>
-                    <Textarea
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      placeholder="Adicione observações sobre a tarefa..."
-                      className="bg-[#222222] border-[#333333] text-[#E0E0E0] min-h-[80px]"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsNewTaskOpen(false)}
-                    className="bg-transparent border-[#333333] text-[#E0E0E0] hover:bg-[#222222]"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    className="bg-gradient-to-r from-[#FFD75A] to-[#FFB84D] hover:from-[#FFE17A] hover:to-[#FFC86D] text-[#0F0F0F]"
-                    onClick={handleCreateTask}
-                  >
-                    Criar Tarefa
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button 
+              onClick={() => setIsNewTaskOpen(true)}
+              className="bg-gradient-to-r from-[#FFD75A] to-[#FFB84D] hover:from-[#FFE17A] hover:to-[#FFC86D] text-[#0F0F0F] shadow-[0_0_20px_rgba(255,215,90,0.3)]"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Tarefa
+            </Button>
           </div>
 
           {/* Controls */}
@@ -513,81 +386,21 @@ export function TaskCalendar({ tasks, onTaskCreate, onTaskUpdate, onTaskBindToTi
         </SheetContent>
       </Sheet>
 
-      {/* Task Detail Dialog */}
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="bg-[#1A1A1A] border-[#222222] max-w-2xl">
-          <DialogHeader>
-            <DialogTitle style={{ color: "#E0E0E0" }}>Detalhes da Tarefa</DialogTitle>
-          </DialogHeader>
-          {selectedTask && (
-            <div className="space-y-4 py-4">
-              <div>
-                <h3 className="mb-2" style={{ color: "#E0E0E0" }}>{selectedTask.title}</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p style={{ color: "#999999" }}>Cliente</p>
-                    <p style={{ color: "#E0E0E0" }}>{selectedTask.client}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: "#999999" }}>Tipo</p>
-                    <p style={{ color: "#E0E0E0" }}>{selectedTask.type}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: "#999999" }}>Data</p>
-                    <p style={{ color: "#E0E0E0" }}>{formatDate(selectedTask.date, "dd MMM yyyy")}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: "#999999" }}>Status</p>
-                    <div className="flex items-center gap-2">
-                      <span>{statusConfig[selectedTask.status].emoji}</span>
-                      <span style={{ color: statusConfig[selectedTask.status].color }}>
-                        {statusConfig[selectedTask.status].label}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p style={{ color: "#999999" }}>Prioridade</p>
-                    <p style={{ color: "#E0E0E0" }}>
-                      {selectedTask.priority === "critical" ? "Crítica" : selectedTask.priority === "high" ? "Alta" : "Normal"}
-                    </p>
-                  </div>
-                  <div>
-                    <p style={{ color: "#999999" }}>Prazo</p>
-                    <p style={{ color: "#E0E0E0" }}>{deltaDays(selectedTask.date)}</p>
-                  </div>
-                </div>
-                {selectedTask.notes && (
-                  <div className="mt-4">
-                    <p style={{ color: "#999999" }}>Notas</p>
-                    <p style={{ color: "#E0E0E0" }}>{selectedTask.notes}</p>
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-3 pt-4 border-t border-[#222222]">
-                <Button
-                  className="flex-1 bg-[#78E08F]/20 text-[#78E08F] border border-[#78E08F]/30 hover:bg-[#78E08F]/30"
-                  onClick={() => {
-                    handleMarkDone(selectedTask.id);
-                    setIsDetailOpen(false);
-                  }}
-                  disabled={selectedTask.status === "done"}
-                >
-                  Marcar como concluída
-                </Button>
-                <Button
-                  className="flex-1 bg-[#FFD75A]/20 text-[#FFD75A] border border-[#FFD75A]/30 hover:bg-[#FFD75A]/30"
-                  onClick={() => {
-                    onTaskBindToTimer(selectedTask.id);
-                    setIsDetailOpen(false);
-                  }}
-                >
-                  Vincular ao Relógio (foco)
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        onMarkDone={handleMarkDone}
+        onBindToTimer={onTaskBindToTimer}
+      />
+
+      {/* New Task Modal */}
+      <NewTaskModal
+        open={isNewTaskOpen}
+        onOpenChange={setIsNewTaskOpen}
+        onTaskCreate={onTaskCreate}
+      />
     </>
   );
 }

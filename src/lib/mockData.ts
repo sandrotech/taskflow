@@ -112,6 +112,27 @@ export interface Client {
   balance: number;
   status: "active" | "inactive" | "warning";
   email?: string;
+  phone?: string;
+  whatsapp?: string;
+  photo?: string;
+  notes?: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  type: "Feed" | "Carrossel" | "Stories" | "Identidade" | "Adaptação" | "Outro";
+  description: string;
+  defaultPrice: number;
+  deliveryTime: number; // in days
+  notes?: string;
+}
+
+export interface ClientProduct {
+  clientId: string;
+  productId: string;
+  customPrice: number;
+  isActive: boolean;
 }
 
 export interface Delivery {
@@ -141,6 +162,9 @@ export const clients: Client[] = [
     balance: 900,
     status: "active",
     email: "contato@techstartup.com",
+    phone: "(11) 98765-4321",
+    whatsapp: "(11) 98765-4321",
+    notes: "Agência focada em startups de tecnologia",
   },
   {
     id: "C-02",
@@ -150,6 +174,7 @@ export const clients: Client[] = [
     balance: 620,
     status: "active",
     email: "silva@advocacia.com",
+    phone: "(11) 3456-7890",
   },
   {
     id: "C-03",
@@ -159,6 +184,8 @@ export const clients: Client[] = [
     balance: -120,
     status: "warning",
     email: "contato@aseventos.com",
+    phone: "(11) 99887-6655",
+    whatsapp: "(11) 99887-6655",
   },
   {
     id: "C-04",
@@ -168,7 +195,59 @@ export const clients: Client[] = [
     balance: 350,
     status: "active",
     email: "pedro@costa.com",
+    phone: "(11) 91234-5678",
   },
+];
+
+export const products: Product[] = [
+  {
+    id: "P-01",
+    name: "Feed Estático",
+    type: "Feed",
+    description: "Post único para feed do Instagram",
+    defaultPrice: 20,
+    deliveryTime: 1,
+  },
+  {
+    id: "P-02",
+    name: "Carrossel",
+    type: "Carrossel",
+    description: "Post carrossel com até 10 slides",
+    defaultPrice: 40,
+    deliveryTime: 2,
+  },
+  {
+    id: "P-03",
+    name: "Story",
+    type: "Stories",
+    description: "Story único para Instagram",
+    defaultPrice: 10,
+    deliveryTime: 1,
+  },
+  {
+    id: "P-04",
+    name: "Adaptação Feed→Story",
+    type: "Adaptação",
+    description: "Adaptação de feed para story",
+    defaultPrice: 12,
+    deliveryTime: 1,
+  },
+  {
+    id: "P-05",
+    name: "Identidade Visual",
+    type: "Identidade",
+    description: "Pacote completo de identidade visual",
+    defaultPrice: 549.9,
+    deliveryTime: 7,
+  },
+];
+
+export const clientProducts: ClientProduct[] = [
+  { clientId: "C-01", productId: "P-01", customPrice: 18, isActive: true },
+  { clientId: "C-01", productId: "P-02", customPrice: 35, isActive: true },
+  { clientId: "C-01", productId: "P-03", customPrice: 10, isActive: true },
+  { clientId: "C-03", productId: "P-01", customPrice: 22, isActive: true },
+  { clientId: "C-03", productId: "P-02", customPrice: 40, isActive: true },
 ];
 
 export const deliveries: Delivery[] = [
